@@ -1901,8 +1901,15 @@ function labelLayout(d: Drawing, proj: Projector): {
     switch (d.type) {
         case 'text':
             return pts[0] ? { x: pts[0][0] + 2, top: pts[0][1] + 2, align: 'left' } : null;
-        case 'hline':
-            return pts[0] ? { x: pts[0][0] + 8, top: pts[0][1] - 4 - lh * lines, align: 'left' } : null; // above the line
+        case 'hline': {
+            if (!pts[0]) return null;
+            const top = text.side === 'below' ? pts[0][1] + 4 : pts[0][1] - 4 - lh * lines;
+            // `place` pins the label to a plot edge (host order/level lines label at the
+            // right edge without clipping into the axis); default keeps the anchor-x slot.
+            if (text.place === 'end') return { x: proj.width - 8, top, align: 'right' };
+            if (text.place === 'start') return { x: 8, top, align: 'left' };
+            return { x: pts[0][0] + 8, top, align: 'left' }; // above the line at the anchor
+        }
         case 'trendline':
         case 'ray':
         case 'extendedline':
