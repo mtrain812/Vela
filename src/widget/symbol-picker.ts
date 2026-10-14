@@ -255,6 +255,9 @@ export interface SymbolPickerOptions {
  *  bottom, so a 13k-symbol venue browses whole without ever rendering 13k rows up front. */
 const PAGE = 100;
 
+/** Category tab → the descriptor `type` values it admits (compared lowercase). */
+const TAB_TYPES: Record<string, string[]> = { Crypto: ['crypto'], Stocks: ['stock'], ETFs: ['etf'], Futures: ['futures', 'root'], Forex: ['forex'], Commodities: ['commodity'] };
+
 export class SymbolPicker {
     private readonly dialog: Dialog;
     private readonly input: HTMLInputElement;
@@ -484,7 +487,6 @@ export class SymbolPicker {
     }
 
     private computeRows(): SymbolDescriptor[] {
-        const TAB_TYPES: Record<string, string[]> = { Crypto: ['crypto'], Stocks: ['stock'], ETFs: ['etf'], Futures: ['futures', 'root'], Forex: ['forex'], Commodities: ['commodity'] };
         const all = this.pool();
         const pool =
             this.activeTab === 'All'
@@ -514,9 +516,40 @@ export class SymbolPicker {
         return out;
     }
 
+    /** Tabs follow the POOL: a category with no symbols behind it is dead weight (a
+     *  one-venue host universe would dangle five foreign asset classes) — hide it; and
+     *  under two live categories the whole row goes ('All' alone says nothing). An
+     *  active tab that just went dark falls back to 'All'. */
+    private syncTabs(): void {
+        const types = new Set(this.pool().map((s) => (s.type ?? '').toLowerCase()));
+        let live = 0;
+        let allBtn: HTMLElement | null = null;
+        for (const el of this.tabs.children) {
+            const b = el as HTMLElement;
+            const t = b.textContent ?? '';
+            if (t === 'All') {
+                allBtn = b;
+                continue;
+            }
+            const show = (TAB_TYPES[t] ?? []).some((x) => types.has(x)) || (t === 'Crypto' && types.has('futures'));
+            b.style.display = show ? '' : 'none';
+            if (show) live += 1;
+            else if (this.activeTab === t) {
+                this.activeTab = 'All';
+                delete b.dataset.active;
+            }
+        }
+        if (this.activeTab === 'All' && allBtn && !allBtn.dataset.active) {
+            for (const c of this.tabs.children) delete (c as HTMLElement).dataset.active;
+            allBtn.dataset.active = '1';
+        }
+        this.tabs.style.display = live >= 2 ? '' : 'none';
+    }
+
     private refresh(): void {
         const doc = this.list.ownerDocument;
         this.visible = PAGE; // a new query/tab starts back at one page
+        this.syncTabs(); // before computeRows — a dark active tab must fall back first
         this.rows = this.computeRows();
         this.highlighted = 0;
         this.list.replaceChildren();

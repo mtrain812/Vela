@@ -492,7 +492,12 @@ export class VelaWorkspace {
             host: this.root,
             // Row icons come from each descriptor's OWNING provider (resolveSymbolIcon).
             iconFor: (d) => this.feed.symbolIconOf(d),
-            onSelect: (ticker) => this.active.setSymbol(ticker),
+            // A host hook returning true OWNS the pick (route-per-symbol hosts navigate);
+            // otherwise the default in-place switch applies.
+            onSelect: (ticker) => {
+                if (opts.onSymbolSelect?.(ticker) === true) return;
+                this.active.setSymbol(ticker);
+            },
             onOpenChange: (open) => {
                 // In-chart dialogs (indicator inputs, chart settings) live inside a cell's
                 // chart container, so opening the search from the topbar never hits their

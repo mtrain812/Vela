@@ -73,4 +73,11 @@ export interface VelaShellOptions {
      *  any {@link VelaStorage} (sync or async) for custom backends (REST, IndexedDB, …)
      *  or the exported in-memory adapter for session-lived state. */
     storage?: VelaStorage;
+    /** Intercept a symbol-search pick BEFORE the shell applies it. Return `true` to
+     *  take the pick over entirely (the shell does nothing — for hosts that key
+     *  routes/persistence per symbol and must navigate instead of switching the
+     *  chart in place); any other return falls through to the default in-place
+     *  switch. The string is the picker's canonical committed form
+     *  (`provider:TICKER` / `PREFIX:TICKER`). */
+    onSymbolSelect?: (symbol: string) => boolean | void;
 }
