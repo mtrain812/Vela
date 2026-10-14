@@ -80,4 +80,12 @@ export interface VelaShellOptions {
      *  switch. The string is the picker's canonical committed form
      *  (`provider:TICKER` / `PREFIX:TICKER`). */
     onSymbolSelect?: (symbol: string) => boolean | void;
+    /** Intercept the symbol search OPENING before the shell shows its built-in
+     *  picker. Return `true` to own the search surface entirely (the built-in
+     *  dialog never opens — for hosts that present their own symbol UI); any
+     *  other return falls through to the built-in picker. `seed` carries the
+     *  keystroke that opened the search by bare typing ('' for a click). Covers
+     *  every entry point: topbar/mobile symbol button, bare typing on the root,
+     *  and the widget context's `openSymbolSearch`. */
+    onSymbolSearchOpen?: (seed?: string) => boolean | void;
 }

@@ -541,7 +541,7 @@ export class VelaWorkspace {
             // RAW option, not the resolved lists — the bar distinguishes a host-declared
             // side (list is law) from a default one (an override's `order` may flow).
             composition: opts.topbar,
-            onSymbolClick: () => this.symbolPicker.open(),
+            onSymbolClick: () => this.openSymbolSearch(),
             ...(picker ? { onIndicatorsClick: () => picker.open() } : {}),
             onUndoClick: () => this.active.history.undo(),
             onRedoClick: () => this.active.history.redo(),
@@ -726,7 +726,7 @@ export class VelaWorkspace {
                 ? new MobileBar(this.root, {
                       symbol: '',
                       timeframe: '60',
-                      onSymbolClick: () => this.symbolPicker.open(),
+                      onSymbolClick: () => this.openSymbolSearch(),
                       onTimeframeClick: () => this.openTimeframeDrawer(),
                       // Same visibility truth as the desktop bar: composition-hidden
                       // indicators lose their mobile stop too; an override takes it over.
@@ -922,7 +922,7 @@ export class VelaWorkspace {
             active: () => (this.activeId ? (this.cellsById.get(this.activeId) ?? null) : null),
             cells: () => this.cells(),
             setActiveCell: (id) => this.setActiveCell(id),
-            openSymbolSearch: (query) => this.symbolPicker.open(query ?? ''),
+            openSymbolSearch: (query) => this.openSymbolSearch(query ?? ''),
             togglePanel: (id, open) => this.dock.toggle(id, open),
             dockStrip: (el) => {
                 this.stripsEl.appendChild(el);
@@ -2502,8 +2502,19 @@ export class VelaWorkspace {
         const hit = resolveTyping(ev.key, { dialogs: this.openDialogs, symbolSearch: this.symbolPicker.isOpen, timeframeEntry: this.tfQuick.isOpen });
         if (!hit) return;
         ev.preventDefault();
-        if (hit.target === 'symbol') this.symbolPicker.type(hit.text);
-        else this.tfQuick.type(hit.text);
+        if (hit.target === 'symbol') {
+            // Extending an ALREADY-open built-in picker is not an "open" — the host
+            // rider only guards the opening; a rider-owned search never gets here
+            // (the built-in dialog never opened, so symbolSearch stays false).
+            if (this.symbolPicker.isOpen) this.symbolPicker.type(hit.text);
+            else this.openSymbolSearch(hit.text);
+        } else this.tfQuick.type(hit.text);
+    }
+
+    /** Every symbol-search entry point routes here — the host rider may own the UI. */
+    private openSymbolSearch(seed = ''): void {
+        if (this.opts.onSymbolSearchOpen?.(seed) === true) return;
+        this.symbolPicker.open(seed);
     }
 
     private trackDialog(open: boolean): void {
