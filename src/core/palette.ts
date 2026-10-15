@@ -79,3 +79,17 @@ export function categoricalColor(key: string): string {
     for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
     return CATEGORICAL[h % CATEGORICAL.length]!;
 }
+
+/** Color-picker swatch table — the Material Design scale (the convention traders know
+ *  from TradingView's picker). Columns: red · orange · yellow · green · teal · cyan ·
+ *  blue · indigo · purple · pink. Rows: the vivid 500 base first (TradingView order),
+ *  then tints→shades 100→900. The picker prepends its own grayscale row. */
+export const SWATCH_SHADES: ReadonlyArray<readonly string[]> = [
+    ['#f44336', '#ff9800', '#ffeb3b', '#4caf50', '#009688', '#00bcd4', '#2196f3', '#3f51b5', '#9c27b0', '#e91e63'], // 500
+    ['#ffcdd2', '#ffe0b2', '#fff9c4', '#c8e6c9', '#b2dfdb', '#b2ebf2', '#bbdefb', '#c5cae9', '#e1bee7', '#f8bbd0'], // 100
+    ['#ef9a9a', '#ffcc80', '#fff59d', '#a5d6a7', '#80cbc4', '#80deea', '#90caf9', '#9fa8da', '#ce93d8', '#f48fb1'], // 200
+    ['#e57373', '#ffb74d', '#fff176', '#81c784', '#4db6ac', '#4dd0e1', '#64b5f6', '#7986cb', '#ba68c8', '#f06292'], // 300
+    ['#ef5350', '#ffa726', '#ffee58', '#66bb6a', '#26a69a', '#26c6da', '#42a5f5', '#5c6bc0', '#ab47bc', '#ec407a'], // 400
+    ['#d32f2f', '#f57c00', '#fbc02d', '#388e3c', '#00796b', '#0097a7', '#1976d2', '#303f9f', '#7b1fa2', '#c2185b'], // 700
+    ['#b71c1c', '#e65100', '#f57f17', '#1b5e20', '#004d40', '#006064', '#0d47a1', '#1a237e', '#4a148c', '#880e4f'], // 900
+];

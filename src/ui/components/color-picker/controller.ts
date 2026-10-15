@@ -1,6 +1,6 @@
 // Color-picker CONTROLLER — color math only. No DOM.
 
-import { ACCENT_BRIGHT } from '../../../core/palette';
+import { ACCENT_BRIGHT, SWATCH_SHADES } from '../../../core/palette';
 
 /** Split a color into its `#RRGGBB` part + alpha 0..1 (handles `#RGB`, `#RRGGBB(AA)`, `rgba()`). */
 export function splitColor(color: string): { hex6: string; alpha: number } {
@@ -53,20 +53,10 @@ export function hslHex(h: number, s: number, l: number): string {
     return `#${to(f(0))}${to(f(8))}${to(f(4))}`;
 }
 
-/** A swatch palette: a grayscale row, then hue columns × shade rows. */
+/** A swatch palette: a grayscale row, then the standard Material scale ({@link SWATCH_SHADES}). */
 export function buildPalette(): string[][] {
     const grays = [100, 90, 80, 68, 56, 45, 35, 25, 14, 0].map((l) => hslHex(0, 0, l));
-    const hues = [4, 28, 50, 96, 140, 174, 200, 224, 270, 322];
-    const levels: Array<[number, number]> = [
-        [82, 56],
-        [58, 84],
-        [62, 74],
-        [66, 62],
-        [70, 50],
-        [64, 39],
-        [54, 29],
-    ];
-    return [grays, ...levels.map(([s, l]) => hues.map((h) => hslHex(h, s, l)))];
+    return [grays, ...SWATCH_SHADES.map((row) => [...row])];
 }
 
 /** The alpha checkerboard laid under translucent colors. Its grays are fixed on purpose:
