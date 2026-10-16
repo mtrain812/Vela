@@ -58,6 +58,15 @@ export class RendererControl {
     }
 
     /**
+     * Wire the host's "about this indicator" handler (the shells route
+     * `onIndicatorInfo` through this; see `VelaShellOptions.onIndicatorInfo`). Silent on
+     * a renderer without the seam — same graceful degradation as {@link setLegendActions}.
+     */
+    setIndicatorInfo(handler: ((type: string) => void) | null): void {
+        this.renderer.setIndicatorInfo?.(handler);
+    }
+
+    /**
      * Wire the legend rows' HOST-CONTRIBUTED callout bubbles (the shells route the
      * plugin registry through this; see `registerLegendCallout`). Silent on a renderer
      * without the seam — contributed callouts simply never show there, same graceful

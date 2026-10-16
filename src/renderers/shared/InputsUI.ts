@@ -55,6 +55,8 @@ interface LegendRow {
     id: string;
     /** Display text for the legend chip AND the settings-dialog header (may be a compact shorttitle). */
     title: string;
+    /** Native type id for a core-computed indicator (feeds the dialog header's info button). */
+    nativeType?: string;
     inputs: InputSchema[];
     values: Record<string, InputValue>;
     /** Declaration-props schema + values (the settings dialog's "Properties" tab). */
@@ -157,6 +159,8 @@ export class InputsUI {
     private onToggleVisible: ((id: string, visible: boolean) => void) | null = null;
     /** Host symbol picker for `input.symbol`; when set the control opens the host's ticker UI. */
     private symbolPicker: SymbolPickerFn | null = null;
+    /** Host "about this indicator" handler — the dialog header's info button (see setIndicatorInfo). */
+    private indicatorInfo: ((type: string) => void) | null = null;
     /** Mobile chrome: the inputs dialog opens fullscreen and the legends render compact. */
     private mobileLayout = false;
     /** Pane move/merge hook — when set, rows get a "Move to" menu + become drag-to-pane sources. */
@@ -232,6 +236,7 @@ export class InputsUI {
             mobile: () => this.mobileLayout,
             dialogHost: () => this.dialogHost,
             symbolPicker: () => this.symbolPicker,
+            indicatorInfo: () => this.indicatorInfo,
             onChange: (c) => this.onChange?.(c),
             onBackdropClose: () => this.clearSelection(),
         });
@@ -321,6 +326,12 @@ export class InputsUI {
     /** Provide (or clear) the host symbol picker that `input.symbol` opens on activation. */
     setSymbolPicker(picker: SymbolPickerFn | null): void {
         this.symbolPicker = picker;
+    }
+
+    /** Provide (or clear) the host "about this indicator" handler — when set, the settings
+     *  dialog header of a NATIVE indicator grows an info button calling it with the type id. */
+    setIndicatorInfo(handler: ((type: string) => void) | null): void {
+        this.indicatorInfo = handler;
     }
 
     /** Enable legend-driven move/merge (a "Move to" menu + drag-to-pane). Null disables it. */
@@ -701,7 +712,7 @@ export class InputsUI {
     }
 
     /** Create or update an indicator's legend row (in the legend for its pane). */
-    upsert(id: string, title: string, inputs: InputSchema[], values: Record<string, InputValue>, paneId = 'price', opts: { native?: boolean; beta?: boolean; props?: InputSchema[]; propValues?: Record<string, InputValue> } = {}): void {
+    upsert(id: string, title: string, inputs: InputSchema[], values: Record<string, InputValue>, paneId = 'price', opts: { native?: boolean; nativeType?: string; beta?: boolean; props?: InputSchema[]; propValues?: Record<string, InputValue> } = {}): void {
         const existing = this.rows.get(id);
         if (existing) {
             existing.title = title;
@@ -709,6 +720,7 @@ export class InputsUI {
             existing.values = { ...values };
             existing.props = opts.props ?? [];
             existing.propValues = { ...(opts.propValues ?? {}) };
+            if (opts.nativeType !== undefined) existing.nativeType = opts.nativeType;
             existing.titleEl.textContent = title;
             if (existing.paneId !== paneId) { // re-routed to a different pane
                 existing.paneId = paneId;
@@ -872,7 +884,7 @@ export class InputsUI {
         el.appendChild(controlsEl);
 
         this.attach(this.legendFor(paneId), el, !!opts.native);
-        const row: LegendRow = { id, title, inputs, values: { ...values }, props: opts.props ?? [], propValues: { ...(opts.propValues ?? {}) }, el, titleEl, statusEl, valuesEl, plotValues: [], plotValuesKey: '', showValues: null, highlighted: false, paneId, hidden: false, eyeEl, controlsEl, extrasEl, calloutsEl, callouts: [], native: !!opts.native };
+        const row: LegendRow = { id, title, ...(opts.nativeType !== undefined ? { nativeType: opts.nativeType } : {}), inputs, values: { ...values }, props: opts.props ?? [], propValues: { ...(opts.propValues ?? {}) }, el, titleEl, statusEl, valuesEl, plotValues: [], plotValuesKey: '', showValues: null, highlighted: false, paneId, hidden: false, eyeEl, controlsEl, extrasEl, calloutsEl, callouts: [], native: !!opts.native };
         this.rows.set(id, row);
         this.renderCallouts(row);
         this.syncFoldToggle(); // 2+ indicators grow the fold chevron; a folded legend hides the new row too

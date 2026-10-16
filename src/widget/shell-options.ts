@@ -88,4 +88,11 @@ export interface VelaShellOptions {
      *  every entry point: topbar/mobile symbol button, bare typing on the root,
      *  and the widget context's `openSymbolSearch`. */
     onSymbolSearchOpen?: (seed?: string) => boolean | void;
+    /** Host "about this indicator" surface. When registered, NATIVE (core-computed)
+     *  indicator rows in the picker and the native settings dialog's header grow an
+     *  info button that calls this with the native type id — the host presents its
+     *  own documentation UI (a panel, a popover, a page). Scripts are the host's own
+     *  content and carry no type id, so they get no button. Absent ⇒ no info
+     *  affordance renders anywhere. */
+    onIndicatorInfo?: (type: string) => void;
 }

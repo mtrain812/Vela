@@ -252,6 +252,8 @@ export class NativeRenderer implements IChartRenderer {
     private indicatorValuesOn = true;
     /** Host-contributed legend actions — held here so a rebuild of the legend re-wires them. */
     private legendActionsProvider: ((indicatorId: string) => LegendActionView[]) | null = null;
+    /** Host "about this indicator" handler — held here so a remount re-applies it. */
+    private indicatorInfoHandler: ((type: string) => void) | null = null;
     /** Host-contributed legend callouts — held here so a rebuild of the legend re-wires them. */
     private legendCalloutsProvider: ((indicatorId: string) => LegendCalloutView[]) | null = null;
     /** Host override of the legend's fold toggle — held here so a remount re-applies it. */
@@ -1652,6 +1654,7 @@ export class NativeRenderer implements IChartRenderer {
         this.inputsUI.setLegendActions(this.legendActionsProvider);
         this.inputsUI.setLegendCallouts(this.legendCalloutsProvider);
         this.inputsUI.setLegendOverviewAction(this.legendOverviewAction);
+        this.inputsUI.setIndicatorInfo(this.indicatorInfoHandler);
         this.inputsUI.setOnChange((c) => {
             for (const cb of this.inputChangeCbs) cb({ indicatorId: c.indicatorId, key: c.key, value: c.value, ...(c.kind ? { kind: c.kind } : {}) });
         });
@@ -2204,6 +2207,7 @@ export class NativeRenderer implements IChartRenderer {
         if (model.legend !== false) {
             this.inputsUI.upsert(model.id, model.shorttitle ?? model.title, model.inputs, model.inputValues, model.paneId, {
                 native: !!model.native,
+                ...(model.native ? { nativeType: model.native.type } : {}),
                 ...(model.props ? { props: model.props, propValues: model.propValues ?? {} } : {}),
             });
         }
@@ -2270,6 +2274,11 @@ export class NativeRenderer implements IChartRenderer {
     setLegendActions(provider: ((indicatorId: string) => LegendActionView[]) | null): void {
         this.legendActionsProvider = provider;
         this.inputsUI?.setLegendActions(provider);
+    }
+
+    setIndicatorInfo(handler: ((type: string) => void) | null): void {
+        this.indicatorInfoHandler = handler;
+        this.inputsUI?.setIndicatorInfo(handler);
     }
 
     setLegendCallouts(provider: ((indicatorId: string) => LegendCalloutView[]) | null): void {

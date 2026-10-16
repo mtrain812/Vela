@@ -31,6 +31,12 @@ export { lowerTimeframeTicks, barsToTicks } from './core/replayTicks';
 // Native indicators (core-computed, no scripting engine) — register a type, then chart.addNativeIndicator(type)
 export { registerNativeIndicator, unregisterNativeIndicator, getNativeIndicator, nativeIndicatorTypes, nativeIndicatorDescriptors } from './core/native-indicators';
 export type { NativeIndicator, NativeIndicatorContext, NativeIndicatorDescriptor, NativeIndicatorInfo, NativeIndicatorOutput } from './core/native-indicators';
+// The built-in catalogs as DATA — a host documenting/auditing the indicator set (docs
+// coverage tests, "about" pages) reads these without constructing a chart.
+export { classicSpecs, registerClassicIndicators } from './core/native-indicators/classics';
+export type { ClassicIndicatorSpec } from './core/native-indicators/classics';
+export { volumeDescriptor } from './core/native-indicators/volume';
+export { vpvrDescriptor } from './core/native-indicators/vpvr';
 export { DARK_THEME, LIGHT_THEME, resolveTheme } from './core/theme';
 export { TypedEventBus } from './core/events/EventBus';
 

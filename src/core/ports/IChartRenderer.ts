@@ -340,6 +340,14 @@ export interface IChartRenderer {
     setLegendActions?(provider: ((indicatorId: string) => LegendActionView[]) | null): void;
 
     /**
+     * Supply the host's "about this indicator" handler (the shells wire
+     * `VelaShellOptions.onIndicatorInfo` through this). When set, the NATIVE settings
+     * dialog's header grows an info button calling it with the native type id. Optional
+     * — a renderer without it (or a null handler) simply never shows the affordance.
+     */
+    setIndicatorInfo?(handler: ((type: string) => void) | null): void;
+
+    /**
      * Supply the HOST-CONTRIBUTED callout bubbles of each legend row (the shells wire
      * the plugin registry through this — see `registerLegendCallout`). Same contract as
      * {@link setLegendActions}: the provider is called per row, lazily; calling this

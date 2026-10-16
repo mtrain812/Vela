@@ -25,6 +25,8 @@ export interface IndicatorDialogRow {
     id: string;
     /** Dialog header — the same compact text the legend chip shows. */
     title: string;
+    /** Native type id for a core-computed indicator — feeds the header's host info button. */
+    nativeType?: string;
     inputs: InputSchema[];
     values: Record<string, InputValue>;
     /** Declaration-props schema + values — rendered on the "Properties" tab. */
@@ -50,6 +52,8 @@ export interface IndicatorDialogHost {
     mobile: () => boolean;
     dialogHost: () => HTMLElement | null;
     symbolPicker: () => SymbolPickerFn | null;
+    /** Host "about this indicator" handler — absent/null means no header info button. */
+    indicatorInfo?: () => ((type: string) => void) | null;
     onChange: ((c: InputsUIChange) => void) | null;
     onBackdropClose: () => void;
 }
@@ -134,6 +138,28 @@ export class IndicatorInputsDialog {
             theme: () => this.host.theme(),
             text: () => 'Close',
         }));
+        // Host docs hook: a NATIVE indicator's header grows an info button calling the
+        // host's onIndicatorInfo with the type id (absent handler or script row ⇒ nothing).
+        const infoHandler = this.host.indicatorInfo?.() ?? null;
+        if (infoHandler && row.nativeType) {
+            const type = row.nativeType;
+            const closeBtn = ui.panel.querySelector('.vela-dialog-close') as HTMLElement;
+            const info = document.createElement('button');
+            info.type = 'button';
+            info.className = 'vela-ind-ctl vela-ind-dialog-info';
+            info.setAttribute('aria-label', 'About this indicator');
+            info.innerHTML = iconAt('info', 16);
+            info.style.cssText =
+                'cursor:pointer;display:inline-flex;align-items:center;justify-content:center;' +
+                'border:none;line-height:0;padding:0;width:22px;height:22px;border-radius:4px;box-sizing:border-box;flex:none;';
+            info.addEventListener('click', () => infoHandler(type));
+            closeBtn.before(info);
+            this.dialogTips.push(attachChromeTooltip(info, {
+                host: this.host.container,
+                theme: () => this.host.theme(),
+                text: () => 'About this indicator',
+            }));
+        }
 
         const tabDefs = tabInputs(row.inputs);
         if (row.props.length > 0) {

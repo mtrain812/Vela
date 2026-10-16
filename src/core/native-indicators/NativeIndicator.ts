@@ -104,6 +104,12 @@ export interface NativeIndicatorDescriptor {
      * Absent ⇒ {@link title}. The picker keeps the full title either way.
      */
     readonly shortTitle?: string;
+    /**
+     * One or two plain sentences on what the indicator measures — a generic fallback
+     * for host "about" surfaces when no richer host documentation is registered.
+     * Optional; purely descriptive metadata, never read by the compute.
+     */
+    readonly about?: string;
     readonly paneHint: 'price' | 'new';
     readonly overlay: boolean;
     /** Whether instances react to viewport changes (drives the orchestrator's viewport poke). */

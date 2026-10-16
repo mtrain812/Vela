@@ -87,6 +87,15 @@ const CSS = `
     font-size: var(--vela-font-size-md);
 }
 .vela-ip-trash:hover { color: var(--vela-down); background: var(--vela-hover); }
+.vela-ip-info {
+    all: unset;
+    cursor: pointer;
+    color: var(--vela-fg-muted);
+    padding: 2px 4px;
+    border-radius: var(--vela-radius-sm);
+    font-size: var(--vela-font-size-md);
+}
+.vela-ip-info:hover { color: var(--vela-accent); background: var(--vela-hover); }
 .vela-ip-empty { padding: var(--vela-space-3); color: var(--vela-fg-muted); text-align: center; }
 `;
 
@@ -97,6 +106,9 @@ export interface IndicatorPickerOptions {
     onChart: () => readonly IndicatorRow[];
     onAdd: (libraryIndex: number) => void;
     onRemove: (instanceIndex: number) => void;
+    /** Host "about this indicator" hook — when given, NATIVE rows grow an info button
+     *  calling it with the row's native type id (see `VelaShellOptions.onIndicatorInfo`). */
+    onInfo?: (type: string) => void;
     onOpenChange?: (open: boolean) => void;
     host?: HTMLElement;
 }
@@ -143,8 +155,14 @@ export class IndicatorPicker {
         });
         this.list.addEventListener('click', (e) => {
             const trash = (e.target as HTMLElement).closest<HTMLElement>('.vela-ip-trash');
+            const info = (e.target as HTMLElement).closest<HTMLElement>('.vela-ip-info');
             const row = (e.target as HTMLElement).closest<HTMLElement>('.vela-ip-row');
             if (!row) return;
+            if (info) {
+                // Info never adds/removes — the row stays as it was, no refresh.
+                if (row.dataset.type) this.opts.onInfo?.(row.dataset.type);
+                return;
+            }
             if (trash) {
                 this.opts.onRemove(Number(row.dataset.instance));
             } else if (row.dataset.library !== undefined) {
@@ -185,6 +203,7 @@ export class IndicatorPicker {
             if (opts.library !== undefined) row.dataset.library = String(opts.library);
             if (opts.instance !== undefined) row.dataset.instance = String(opts.instance);
             if (r.native) row.dataset.native = '1';
+            if (r.nativeType) row.dataset.type = r.nativeType;
             const name = doc.createElement('span');
             name.className = 'vela-ip-name';
             name.textContent = r.name;
@@ -209,6 +228,18 @@ export class IndicatorPicker {
                 trash.appendChild(iconEl('trash', doc));
                 trash.title = 'Remove from chart';
                 row.appendChild(trash);
+            }
+            // Host docs hook: native rows only — a script is the host's own content.
+            if (this.opts.onInfo && r.nativeType) {
+                const info = doc.createElement('button');
+                info.className = 'vela-ip-info';
+                info.appendChild(iconEl('info', doc));
+                info.title = 'About this indicator';
+                info.setAttribute('aria-label', `About ${r.name}`);
+                // Before the trash so remove keeps the row's outermost (rightmost) slot.
+                const trash = row.querySelector('.vela-ip-trash');
+                if (trash) row.insertBefore(info, trash);
+                else row.appendChild(info);
             }
             return row;
         };

@@ -336,6 +336,9 @@ export interface LegendIndicatorInfo {
      *  update shows through); undefined for a NATIVE (core-computed) indicator. The usual
      *  `when` gate for source-centric actions. */
     source?: string;
+    /** The native type id for a core-computed indicator; undefined for a script. The two
+     *  are exclusive — a row has a `source` or a `nativeType` (see `IndicatorHandle`). */
+    nativeType?: string;
 }
 
 /**
@@ -385,7 +388,12 @@ export function legendActions(): LegendActionDescriptor[] {
 export function legendActionsProviderFor(chart: Vela, context: () => WidgetContext): (indicatorId: string) => LegendActionView[] {
     return (indicatorId) => {
         const find = (): IndicatorHandle | undefined => chart.indicators().find((h) => h.id === indicatorId);
-        const infoOf = (h: IndicatorHandle): LegendIndicatorInfo => ({ id: h.id, title: h.title, ...(h.source !== undefined ? { source: h.source } : {}) });
+        const infoOf = (h: IndicatorHandle): LegendIndicatorInfo => ({
+            id: h.id,
+            title: h.title,
+            ...(h.source !== undefined ? { source: h.source } : {}),
+            ...(h.nativeType !== undefined ? { nativeType: h.nativeType } : {}),
+        });
         const handle = find();
         if (!handle) return [];
         const info = infoOf(handle);

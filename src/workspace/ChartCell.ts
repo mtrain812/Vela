@@ -158,6 +158,9 @@ export interface CellDeps {
     manifestSettled(): boolean;
     /** Report a pointer-down/focus in this cell (the workspace sets it active). */
     activate(id: string): void;
+    /** Host "about this indicator" handler (shell option) — wired to the renderer so the
+     *  native settings dialog's header grows an info button. Absent ⇒ no affordance. */
+    onIndicatorInfo?: (type: string) => void;
     /** Whether the grid holds more than one cell — gates the cluster's maximize
      *  button and its drag handle (a lone chart has neither use). */
     multiCell(): boolean;
@@ -360,6 +363,8 @@ export class ChartCell {
         // context follows the workspace rule (built fresh per click, active-cell bound).
         this.inner.renderer.setLegendActions(legendActionsProviderFor(this.inner, () => deps.context()));
         this.inner.renderer.setLegendCallouts(legendCalloutsProviderFor(this.inner, () => deps.context()));
+        // Host docs hook — the native settings dialog's header info button (shell option).
+        if (deps.onIndicatorInfo) this.inner.renderer.setIndicatorInfo(deps.onIndicatorInfo);
         // The cell owns ONE unified undo timeline (drawings + indicator ops), driven by
         // the workspace keymap. The drawings layer must not self-serve Ctrl+Z/Y or the
         // two histories desync (its preempt would pop the core drawing stack while the

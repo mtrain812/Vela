@@ -520,6 +520,8 @@ export class VelaWorkspace {
                       onChart: () => this.active.onChartRows(),
                       onAdd: (i) => this.active.addFromLibrary(i),
                       onRemove: (i) => this.active.removeFromChart(i),
+                      // Host docs hook — native rows grow an info button (see shell options).
+                      ...(opts.onIndicatorInfo ? { onInfo: opts.onIndicatorInfo } : {}),
                       onOpenChange: (open) => {
                           // Same rule as the symbol search: the renderer's in-chart dialogs never see
                           // an outside-dismiss from a topbar dialog — close them on every cell.
@@ -1691,6 +1693,7 @@ export class VelaWorkspace {
                 onStateDirty: () => this.markStateDirty(),
                 manifestSettled: () => this.manifestSettled,
                 toast: (message, kind, durationMs) => this.toastHost.show(message, kind, durationMs),
+                ...(this.opts.onIndicatorInfo ? { onIndicatorInfo: this.opts.onIndicatorInfo } : {}),
             });
             cell.host.style.gridArea = perCell[slot.id]?.gridArea ?? '';
             this.cellsById.set(id, cell);
