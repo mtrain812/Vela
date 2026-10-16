@@ -85,12 +85,12 @@ export const vpvrDescriptor: NativeIndicatorDescriptor = {
     paneHint: 'price',
     overlay: true,
     inputsSchema: (): InputSchema[] => [
-        { key: 'rows', title: 'Rows', type: 'int', defval: DEFAULT_ROWS, min: 2, max: 400, step: 1 },
+        { key: 'rows', title: 'Rows', type: 'int', defval: DEFAULT_ROWS, min: 2, max: 400, step: 1, tooltip: 'Number of price buckets the visible range is split into; more rows = finer levels, thinner bars' },
         { key: 'widthPct', title: 'Width %', type: 'int', defval: DEFAULT_WIDTH_PCT, min: 5, max: 90, step: 1, tooltip: 'Pane width the largest row occupies' },
         { key: 'upColor', title: 'Up color', type: 'color', defval: DEFAULT_UP },
         { key: 'downColor', title: 'Down color', type: 'color', defval: DEFAULT_DOWN },
-        { key: 'showPoc', title: 'Point of control', type: 'bool', defval: true },
-        { key: 'valueAreaPct', title: 'Value area %', type: 'int', defval: DEFAULT_VALUE_AREA_PCT, min: 0, max: 100, step: 1 },
+        { key: 'showPoc', title: 'Point of control', type: 'bool', defval: true, tooltip: 'Outlines the row with the highest traded volume in the visible range' },
+        { key: 'valueAreaPct', title: 'Value area %', type: 'int', defval: DEFAULT_VALUE_AREA_PCT, min: 0, max: 100, step: 1, tooltip: 'Share of total visible volume the brighter value-area rows cover, grown outward from the point of control' },
     ],
     defaultInputs: (): Record<string, InputValue> => ({
         rows: DEFAULT_ROWS,
